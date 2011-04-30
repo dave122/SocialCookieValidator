@@ -1,0 +1,19 @@
+
+Author: David T. Nguyen
+Email: dave122@gmail.com
+Description: Validates whether authentication cookies dropped by
+  Facebook, Twitter, and LinkedIn during client-side authentication
+  is valid based on the applications consumer_secret (private_key).
+  Useful for when your app does client-side authentication and you want
+  to log the user in server side.
+
+Instructions: 
+
+Inputs: 
+  consumer_secret   :   The private key for the application
+  cooke             :   String value stored in cookie, as is.
+
+Output:
+  returns true if cookie is valid
+  returns false if cookie is false
+
