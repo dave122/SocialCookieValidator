@@ -51,7 +51,7 @@ module SocialCookieValidator
   
   end
 
-  # For more informationi:
+  # For more information:
   # http://dev.twitter.com/anywhere/begin
   def SocialCookieValidator.validate_twitter_cookie( consumer_secret, cookie )
     
@@ -81,7 +81,7 @@ module SocialCookieValidator
     oauth_cookie_value = JSON::parse(params["oauth_cookie_value"])
 
     # raise any errors we might find
-    raise "unsupported linkedin cookie version" if oauth_cookie_value["signature_version"] != "1"
+    raise "unsupported linkedin cookie version" if oauth_cookie_value["signature_version"] != LINKEDIN_COOKIE_VERSION
     raise "unsupported encryption scheme" if oauth_cookie_value["signature_method"] != LINKEDIN_SIGNATURE_METHOD
 
     # Get the cookie signature
