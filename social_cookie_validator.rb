@@ -28,10 +28,11 @@ module SocialCookieValidator
 
   LINKEDIN_COOKIE_VERSION = "1";
   LINKEDIN_SIGNATURE_METHOD = "HMAC-SHA1"
+
   
   # For more technical information
   # http://developers.facebook.com/docs/guides/web/#personalization
-  def SocialCookieValidator.validate_facebook_cookie( consumer_secret, cookie )
+  def validate_facebook_cookie( consumer_secret, cookie )
     
     # Parse the cookie to a more useable form
     params = Hash[*CGI.parse(cookie.gsub(/^"|"$/, '')).sort.flatten]
@@ -51,9 +52,15 @@ module SocialCookieValidator
   
   end
 
-  # For more information:
+  def extract_uid_from_facebook_cookie(cookie)
+    # Parse the cookie to a more useable form
+    params = Hash[*CGI.parse(cookie.gsub(/^"|"$/, '')).sort.flatten]
+    params["uid"]
+  end
+
+  # For more informationi:
   # http://dev.twitter.com/anywhere/begin
-  def SocialCookieValidator.validate_twitter_cookie( consumer_secret, cookie )
+  def validate_twitter_cookie( consumer_secret, cookie )
     
     # Parse the cookie to a more useable form
     params = cookie.split(':')
@@ -72,30 +79,42 @@ module SocialCookieValidator
   
   end
 
+  def extract_uid_from_twitter_cookie(cookie)
+    # Parse the cookie to a more useable form
+    params = cookie.split(':')
+    # raise any errors we might find
+    raise "error in twitter signature" if params.size() != 2
+    params[0]    
+  end
+
   # For more information:
   # http://developer.linkedin.com/docs/DOC-1252
-  def SocialCookieValidator.validate_linkedin_cookie( consumer_secret, cookie )
+  def validate_linkedin_cookie( consumer_secret, cookie )
     
     # Parse the cookie to a more useable form
-    params = Hash[*CGI::parse(CGI::unescape(cookie)).flatten.flatten]
-    oauth_cookie_value = JSON::parse(params["oauth_cookie_value"])
+    params = JSON::parse(cookie)
 
     # raise any errors we might find
-    raise "unsupported linkedin cookie version" if oauth_cookie_value["signature_version"] != LINKEDIN_COOKIE_VERSION
-    raise "unsupported encryption scheme" if oauth_cookie_value["signature_method"] != LINKEDIN_SIGNATURE_METHOD
+    raise "unsupported linkedin cookie version" if params["signature_version"] != "1"
+    raise "unsupported encryption scheme" if params["signature_method"] != LINKEDIN_SIGNATURE_METHOD
 
     # Get the cookie signature
-    sig = oauth_cookie_value["signature"]
+    sig = params["signature"]
 
     # Generates the signature base
     signature_base = ''
-    oauth_cookie_value["signature_order"].each do |field|
+    params["signature_order"].each do |field|
       signature_base = signature_base + params[field]
     end
-  
-    # returns whether or not signature matches the consumer secret
-    return sig == Base64.encode64(OpenSSL::HMAC.digest('sha1',consumer_secret, signature_base)).chomp()
+    
+    return sig == Base64.encode64(OpenSSL::HMAC.digest('sha1',consumer_secret, signature_base)).chomp() 
+    
+  end
 
+  def extract_uid_from_linkedin_cookie(cookie)
+    # Parse the cookie to a more useable form
+    params = JSON::parse(CGI::unescape(cookie))
+    return params["member_id"]
   end
 
 end
